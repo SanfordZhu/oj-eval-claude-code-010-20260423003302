@@ -469,21 +469,63 @@ public:
     void sort() {
         if (list_size <= 1) return;
 
-        // Use bubble sort with swap to avoid default construction
-        bool swapped;
-        do {
-            swapped = false;
-            node *cur = head;
-            while (cur && cur->next) {
-                if (*cur->next->data < *cur->data) {
-                    // Swap the data pointers
-                    std::swap(cur->data, cur->next->data);
-                    swapped = true;
-                }
-                cur = cur->next;
-            }
-        } while (swapped);
+        // Use merge sort for better performance
+        head = merge_sort(head);
+
+        // Update tail
+        tail = head;
+        while (tail && tail->next) {
+            tail = tail->next;
+        }
     }
+
+private:
+    // Helper function for merge sort
+    node* merge_sort(node* start) {
+        if (!start || !start->next) return start;
+
+        // Split the list into two halves
+        node* slow = start;
+        node* fast = start->next;
+
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+
+        node* second = slow->next;
+        slow->next = nullptr;
+        if (second) second->prev = nullptr;
+
+        // Recursively sort both halves
+        start = merge_sort(start);
+        second = merge_sort(second);
+
+        // Merge the sorted halves
+        return merge(start, second);
+    }
+
+    // Helper function to merge two sorted lists
+    node* merge(node* first, node* second) {
+        if (!first) return second;
+        if (!second) return first;
+
+        node* result = nullptr;
+
+        if (*first->data < *second->data) {
+            result = first;
+            result->next = merge(first->next, second);
+            if (result->next) result->next->prev = result;
+        } else {
+            result = second;
+            result->next = merge(first, second->next);
+            if (result->next) result->next->prev = result;
+        }
+
+        return result;
+    }
+
+public:
     /**
      * merge two sorted lists into one (both in ascending order)
      * compare with operator< of T
