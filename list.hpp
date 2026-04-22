@@ -469,28 +469,20 @@ public:
     void sort() {
         if (list_size <= 1) return;
 
-        T *arr = new T[list_size];
-        if (!arr) throw runtime_error();
-
-        try {
-            size_t i = 0;
-            for (node *cur = head; cur; cur = cur->next) {
-                arr[i++] = *cur->data;
+        // Use bubble sort with swap to avoid default construction
+        bool swapped;
+        do {
+            swapped = false;
+            node *cur = head;
+            while (cur && cur->next) {
+                if (*cur->next->data < *cur->data) {
+                    // Swap the data pointers
+                    std::swap(cur->data, cur->next->data);
+                    swapped = true;
+                }
+                cur = cur->next;
             }
-
-            bool (*cmp)(const T&, const T&) = [](const T &a, const T &b) -> bool { return a < b; };
-            sjtu::sort(arr, arr + list_size, std::function<bool(const T&, const T&)>(cmp));
-
-            i = 0;
-            for (node *cur = head; cur; cur = cur->next) {
-                *cur->data = arr[i++];
-            }
-
-            delete[] arr;
-        } catch (...) {
-            delete[] arr;
-            throw;
-        }
+        } while (swapped);
     }
     /**
      * merge two sorted lists into one (both in ascending order)
